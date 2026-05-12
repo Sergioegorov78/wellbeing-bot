@@ -1,0 +1,10 @@
+module.exports = {
+  TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN || '',
+  TELEGRAM_CHANNEL_ID: process.env.TELEGRAM_CHANNEL_ID || '',
+  GROQ_API_KEY: process.env.GROQ_API_KEY || '',
+  MAX_POSTS_PER_DAY: 5,
+  DELAY_BETWEEN_POSTS_MIN: 60,
+  LANGUAGE: 'ru',
+  SCHEDULE_TIMES: '09:00,13:00,18:00',
+  DRY_RUN: false,
+};

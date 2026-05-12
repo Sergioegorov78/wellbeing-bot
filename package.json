@@ -1,0 +1,16 @@
+{
+  "name": "tg-antiage-agent",
+  "version": "2.0.0",
+  "description": "Telegram auto-posting agent: anti-age, biohacking, nutrition, well-being (Gemini free)",
+  "main": "agent.js",
+  "scripts": {
+    "start": "node agent.js --run-now",
+    "schedule": "node agent.js --schedule"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^4.3.6"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
