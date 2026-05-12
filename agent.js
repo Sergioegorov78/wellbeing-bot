@@ -34,7 +34,7 @@ function getTodayCount(db) {
 
 // ─── RSS-источники ──────────────────────────────────────────────────────────
 const RSS_FEEDS = [
-  // Надёжные научные и медицинские источники
+  // Научные и медицинские источники
   {
     name: 'Peter Attia – The Drive',
     url: 'https://peterattiamd.com/feed/',
@@ -95,6 +95,47 @@ const RSS_FEEDS = [
     url: 'https://www.longevity.technology/feed/',
     topic: 'anti-age',
   },
+  // Гаджеты и продукты для биохакинга
+  {
+    name: 'Oura Ring Blog',
+    url: 'https://ouraring.com/blog/feed/',
+    topic: 'biohacking',
+  },
+  {
+    name: 'Whoop Blog',
+    url: 'https://www.whoop.com/thelocker/feed/',
+    topic: 'biohacking',
+  },
+  {
+    name: 'Levels Health Blog',
+    url: 'https://www.levelshealth.com/blog/rss.xml',
+    topic: 'nutrition',
+  },
+  {
+    name: 'Ultrahuman Blog',
+    url: 'https://www.ultrahuman.com/blog/rss.xml',
+    topic: 'biohacking',
+  },
+  {
+    name: 'Eight Sleep Blog',
+    url: 'https://www.eightsleep.com/blog/rss/',
+    topic: 'wellbeing',
+  },
+  {
+    name: 'Dave Asprey – Bulletproof',
+    url: 'https://daveasprey.com/feed/',
+    topic: 'biohacking',
+  },
+  {
+    name: 'Examine – Supplement Research',
+    url: 'https://examine.com/feed/',
+    topic: 'nutrition',
+  },
+  {
+    name: 'Nootropics Depot Blog',
+    url: 'https://blog.nootropicsdepot.com/feed/',
+    topic: 'biohacking',
+  },
 ];
 
 // Ключевые слова для фильтрации релевантных статей
@@ -111,6 +152,7 @@ const KEYWORDS = [
   'omega-3', 'vitamin D', 'vitamin', 'magnesium', 'collagen', 'protein',
   'NMN', 'NAD', 'quercetin', 'berberine', 'probiotics', 'prebiotics',
   'antioxidant', 'polyphenol', 'inflammation', 'anti-inflammatory',
+  'nootropic', 'adaptogen', 'ashwagandha', 'creatine', 'spermidine',
   // Метаболизм и здоровье
   'mitochondria', 'mTOR', 'glucose', 'insulin', 'metabolic', 'metabolism',
   'hormone', 'testosterone', 'estrogen', 'thyroid', 'cortisol',
@@ -118,6 +160,15 @@ const KEYWORDS = [
   'wellbeing', 'well-being', 'mental health', 'cognitive', 'brain health',
   'sleep', 'exercise', 'fitness', 'strength', 'muscle', 'cardiovascular',
   'stress', 'recovery', 'immune', 'inflammation',
+  // Гаджеты и технологии биохакинга
+  'wearable', 'tracker', 'smartwatch', 'biosensor', 'monitor',
+  'oura', 'whoop', 'ultrahuman', 'eight sleep', 'continuous glucose',
+  'CGM', 'glucose monitor', 'heart rate', 'sleep tracker', 'ring',
+  'red light therapy', 'infrared', 'PEMF', 'neurofeedback',
+  'cold plunge', 'ice bath', 'hyperbaric', 'oxygen therapy',
+  // Продукты и обзоры
+  'review', 'product', 'device', 'technology', 'app', 'tool',
+  'best', 'top', 'guide', 'how to', 'protocol',
 ];
 
 // ─── HTTP fetch с таймаутом ─────────────────────────────────────────────────
