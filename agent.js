@@ -92,11 +92,6 @@ const RSS_FEEDS = [
   },
   // ── Гаджеты и технологии ───────────────────────────────────────────────────
   {
-    name: 'Oura Ring Blog',
-    url: 'https://ouraring.com/blog/feed/',
-    topic: 'gadgets',
-  },
-  {
     name: 'Whoop Blog',
     url: 'https://www.whoop.com/thelocker/feed/',
     topic: 'gadgets',
@@ -312,6 +307,16 @@ function stripHTML(str) {
 // ─── Проверка релевантности ─────────────────────────────────────────────────
 function isRelevant(item) {
   const text = (item.title + ' ' + item.description).toLowerCase();
+
+  // Фильтр рекламных материалов
+  const adSignals = [
+    'buy now', 'shop now', 'discount', 'promo code', 'coupon', 'sale',
+    'limited offer', 'special offer', 'use code', 'affiliate',
+    'sponsored', 'advertisement', 'paid partnership',
+    'купить', 'скидка', 'промокод', 'реклама',
+  ];
+  if (adSignals.some(signal => text.includes(signal))) return false;
+
   return KEYWORDS.some(kw => text.includes(kw.toLowerCase()));
 }
 
