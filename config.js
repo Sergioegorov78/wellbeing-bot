@@ -5,6 +5,6 @@ module.exports = {
   MAX_POSTS_PER_DAY: 5,
   DELAY_BETWEEN_POSTS_MIN: 60,
   LANGUAGE: 'ru',
-  SCHEDULE_TIMES: '09:00,13:00,18:00',
+  SCHEDULE_TIMES: '09:00,10:25,13:00,16:00,18:00',,
   DRY_RUN: false,
 };
