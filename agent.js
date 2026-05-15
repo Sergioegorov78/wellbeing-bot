@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 /**
  * Telegram Anti-Age / Biohacking / Nutrition Auto-Post Agent
- * Запуск: node agent.js
- * Расписание: cron или встроенный планировщик (см. README)
  */
 
 const https = require('https');
@@ -12,18 +10,57 @@ const fs = require('fs');
 const path = require('path');
 const config = require('./config');
 
-// ─── Хранилище опубликованных постов (JSON-файл) ───────────────────────────
-const DB_FILE = path.join(__dirname, 'published.json');
+// ─── Хранилище опубликованных постов (Redis или файл) ──────────────────────
+// Redis используется на Railway (постоянное хранилище)
+// Файл используется локально
 
-function loadDB() {
+let redisClient = null;
+
+async function initRedis() {
+  if (!process.env.REDIS_URL) return false;
   try {
-    return JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
-  } catch {
-    return { posts: [], keywords: [] };
+    const { createClient } = require('redis');
+    redisClient = createClient({ url: process.env.REDIS_URL });
+    redisClient.on('error', e => log('Redis error: ' + e.message, 'WARN'));
+    await redisClient.connect();
+    log('Redis подключён — дубли будут проверяться постоянно');
+    return true;
+  } catch (e) {
+    log('Redis недоступен, используем файл: ' + e.message, 'WARN');
+    return false;
   }
 }
 
-function saveDB(db) {
+const DB_FILE = path.join(__dirname, 'published.json');
+
+async function loadDB() {
+  if (redisClient) {
+    try {
+      const data = await redisClient.get('published_posts');
+      return data ? JSON.parse(data) : { posts: [] };
+    } catch (e) {
+      log('Ошибка чтения Redis: ' + e.message, 'WARN');
+    }
+  }
+  try {
+    return JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+  } catch {
+    return { posts: [] };
+  }
+}
+
+async function saveDB(db) {
+  // Храним только последние 500 записей чтобы не переполнять Redis
+  if (db.posts.length > 500) db.posts = db.posts.slice(-500);
+
+  if (redisClient) {
+    try {
+      await redisClient.set('published_posts', JSON.stringify(db));
+      return;
+    } catch (e) {
+      log('Ошибка записи Redis: ' + e.message, 'WARN');
+    }
+  }
   fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
 }
 
@@ -485,11 +522,12 @@ function log(msg, level = 'INFO') {
 async function runAgent() {
   log('═══ Агент запущен ═══');
 
-  const db = loadDB();
+  const db = await loadDB();
   const todayCount = getTodayCount(db);
   const remaining = config.MAX_POSTS_PER_DAY - todayCount;
 
   log(`Опубликовано сегодня: ${todayCount}/${config.MAX_POSTS_PER_DAY}`);
+  log(`Записей в базе дублей: ${db.posts.length}`);
 
   if (remaining <= 0) {
     log('Дневной лимит публикаций достигнут. Агент завершает работу.', 'WARN');
@@ -574,7 +612,7 @@ async function runAgent() {
         date: today,
         publishedAt: new Date().toISOString(),
       });
-      saveDB(db);
+      await saveDB(db);
 
       published++;
       log(`  Постов опубликовано в эту сессию: ${published}`);
@@ -615,14 +653,20 @@ function startScheduler() {
 // ─── Точка входа ────────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
 
-if (args.includes('--run-now')) {
-  runAgent().catch(e => { log(e.message, 'ERROR'); process.exit(1); });
-} else if (args.includes('--schedule')) {
-  startScheduler();
-} else {
-  console.log(`
+async function main() {
+  await initRedis();
+
+  if (args.includes('--run-now')) {
+    await runAgent();
+  } else if (args.includes('--schedule')) {
+    startScheduler();
+  } else {
+    console.log(`
 Использование:
   node agent.js --run-now      Запустить агента немедленно
   node agent.js --schedule     Запустить с планировщиком по расписанию из config.js
-  `);
+    `);
+  }
 }
+
+main().catch(e => { console.error(e.message); process.exit(1); });
