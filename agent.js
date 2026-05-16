@@ -153,11 +153,6 @@ const RSS_FEEDS = [
     url: 'https://www.wareable.com/feed/rss',
     topic: 'gadgets',
   },
-  {
-    name: 'Gadgets & Wearables',
-    url: 'https://gadgetsandwearables.com/feed/',
-    topic: 'gadgets',
-  },
   // ── БАДы и суперфуды ───────────────────────────────────────────────────────
   {
     name: 'Nootropics Depot Blog',
@@ -358,17 +353,22 @@ function isRelevant(item) {
 }
 
 // ─── Проверка дублей ────────────────────────────────────────────────────────
+const SESSION_URLS = new Set(); // дубли внутри одной сессии
+
 function isDuplicate(item, db) {
+  // Проверка внутри текущей сессии
+  if (SESSION_URLS.has(item.link)) return true;
+
   const titleWords = item.title.toLowerCase().split(/\W+/).filter(w => w.length > 4);
 
   for (const pub of db.posts) {
     // Точное совпадение URL
     if (pub.url === item.link) return true;
 
-    // Совпадение > 60% слов заголовка
+    // Совпадение > 50% слов заголовка
     const pubWords = (pub.title || '').toLowerCase().split(/\W+/).filter(w => w.length > 4);
     const common = titleWords.filter(w => pubWords.includes(w));
-    if (titleWords.length > 0 && common.length / titleWords.length > 0.6) return true;
+    if (titleWords.length > 0 && common.length / titleWords.length > 0.5) return true;
   }
   return false;
 }
@@ -600,7 +600,8 @@ async function runAgent() {
         }
       }
 
-      // Сохраняем в базу
+      // Сохраняем в базу и сессию
+      SESSION_URLS.add(item.link);
       db.posts.push({
         title: item.title,
         url: item.link,
