@@ -368,7 +368,7 @@ function isDuplicate(item, db) {
     // Совпадение > 50% слов заголовка
     const pubWords = (pub.title || '').toLowerCase().split(/\W+/).filter(w => w.length > 4);
     const common = titleWords.filter(w => pubWords.includes(w));
-    if (titleWords.length > 0 && common.length / titleWords.length > 0.5) return true;
+    if (titleWords.length > 0 && common.length / titleWords.length > 0.6) return true;
   }
   return false;
 }
@@ -502,8 +502,19 @@ function log(msg, level = 'INFO') {
   const line = `[${ts}] [${level}] ${msg}`;
   console.log(line);
 
-  const logFile = path.join(__dirname, 'agent.log');
-  fs.appendFileSync(logFile, line + '\n');
+  // Пишем лог только локально, не на Railway (экономим память)
+  if (!process.env.RAILWAY_ENVIRONMENT) {
+    const logFile = path.join(__dirname, 'agent.log');
+    try {
+      // Ограничиваем размер лога — максимум 1MB
+      const stats = fs.existsSync(logFile) ? fs.statSync(logFile) : null;
+      if (stats && stats.size > 1024 * 1024) {
+        fs.writeFileSync(logFile, line + '\n');
+      } else {
+        fs.appendFileSync(logFile, line + '\n');
+      }
+    } catch (e) {}
+  }
 }
 
 // ─── Главная функция ────────────────────────────────────────────────────────
@@ -544,8 +555,8 @@ async function runAgent() {
     const items = parseRSS(xml);
     log(`  Найдено статей: ${items.length}`);
 
-    // Фильтруем: релевантные и свежие (последние 30 дней)
-    const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    // Фильтруем: релевантные и свежие (последние 60 дней)
+    const cutoff = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
     const candidates = items.filter(item => {
       const pub = new Date(item.pubDate);
       return !isNaN(pub) ? pub > cutoff : true;
@@ -575,11 +586,11 @@ async function runAgent() {
         continue;
       }
 
-      // Проверяем что пост связан со статьёй
-      const titleWords = item.title.toLowerCase().split(/\W+/).filter(w => w.length > 4);
+      // Проверяем что пост связан со статьёй (мягкая проверка)
+      const titleWords = item.title.toLowerCase().split(/\W+/).filter(w => w.length > 3);
       const postLower = postText.toLowerCase();
       const matchCount = titleWords.filter(w => postLower.includes(w)).length;
-      if (titleWords.length > 2 && matchCount === 0) {
+      if (titleWords.length > 3 && matchCount === 0) {
         log(`  Пост не соответствует статье — пропускаем`, 'WARN');
         continue;
       }
