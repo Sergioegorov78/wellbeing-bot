@@ -555,8 +555,8 @@ async function runAgent() {
     const items = parseRSS(xml);
     log(`  Найдено статей: ${items.length}`);
 
-    // Фильтруем: релевантные и свежие (последние 60 дней)
-    const cutoff = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+    // Фильтруем: только свежие статьи за последние 24 часа
+    const cutoff = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000);
     const candidates = items.filter(item => {
       const pub = new Date(item.pubDate);
       return !isNaN(pub) ? pub > cutoff : true;
