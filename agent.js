@@ -211,11 +211,6 @@ const RSS_FEEDS = [
     url: 'https://www.spabusiness.com/rss/',
     topic: 'wellness',
   },
-  {
-    name: 'Robb Report – Health',
-    url: 'https://robbreport.com/feed/',
-    topic: 'wellness',
-  },
   // ── Интегративная медицина ─────────────────────────────────────────────────
   {
     name: 'Integrative Medicine – IMCJ',
@@ -337,18 +332,39 @@ function stripHTML(str) {
 }
 
 // ─── Проверка релевантности ─────────────────────────────────────────────────
+const STOP_WORDS = [
+  // Алкоголь
+  'bourbon', 'whiskey', 'whisky', 'wine', 'beer', 'alcohol', 'cocktail',
+  'vodka', 'gin', 'rum', 'tequila', 'champagne', 'spirits', 'distillery',
+  'winery', 'brewery', 'cask', 'barrel aged',
+  // Яхты, авто, люкс не по теме
+  'yacht', 'superyacht', 'supercar', 'private jet', 'real estate',
+  'mansion', 'villa', 'jewelry', 'jewellery', 'watch collection',
+  'fashion', 'haute couture', 'designer bag',
+  // Еда и рестораны (не нутрициология)
+  'restaurant', 'michelin star', 'chef', 'recipe', 'cookbook',
+  'fine dining', 'gourmet',
+  // Технологии не по теме
+  'iphone', 'android', 'smartphone', 'laptop', 'gaming', 'crypto',
+  'bitcoin', 'nft', 'stock market', 'investment fund',
+];
+
 function isRelevant(item) {
   const text = (item.title + ' ' + item.description).toLowerCase();
 
+  // Проверка стоп-слов — если есть хоть одно, отклоняем
+  if (STOP_WORDS.some(word => text.includes(word))) return false;
+
   // Фильтр рекламных материалов
   const adSignals = [
-    'buy now', 'shop now', 'discount', 'promo code', 'coupon', 'sale',
+    'buy now', 'shop now', 'discount', 'promo code', 'coupon',
     'limited offer', 'special offer', 'use code', 'affiliate',
     'sponsored', 'advertisement', 'paid partnership',
-    'купить', 'скидка', 'промокод', 'реклама',
+    'купить', 'скидка', 'промокод',
   ];
   if (adSignals.some(signal => text.includes(signal))) return false;
 
+  // Должно содержать хотя бы одно ключевое слово по теме
   return KEYWORDS.some(kw => text.includes(kw.toLowerCase()));
 }
 
