@@ -129,11 +129,6 @@ const RSS_FEEDS = [
   },
   // ── Гаджеты и технологии ───────────────────────────────────────────────────
   {
-    name: 'Whoop Blog',
-    url: 'https://www.whoop.com/thelocker/feed/',
-    topic: 'gadgets',
-  },
-  {
     name: 'Levels Health Blog',
     url: 'https://www.levelshealth.com/blog/rss.xml',
     topic: 'gadgets',
@@ -186,18 +181,8 @@ const RSS_FEEDS = [
     topic: 'running',
   },
   {
-    name: 'Trail Runner Magazine',
-    url: 'https://www.trailrunnermag.com/feed/',
-    topic: 'running',
-  },
-  {
     name: 'Runner\'s World',
     url: 'https://www.runnersworld.com/feeds/all',
-    topic: 'running',
-  },
-  {
-    name: 'Ultra168 – Trail & Ultra',
-    url: 'https://ultra168.com/feed/',
     topic: 'running',
   },
   // ── Wellness клубы и люкс-велнес ──────────────────────────────────────────
@@ -571,8 +556,8 @@ async function runAgent() {
     const items = parseRSS(xml);
     log(`  Найдено статей: ${items.length}`);
 
-    // Фильтруем: только свежие статьи за последние 24 часа
-    const cutoff = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000);
+    // Фильтруем: свежие статьи за последние 3 дня
+    const cutoff = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
     const candidates = items.filter(item => {
       const pub = new Date(item.pubDate);
       return !isNaN(pub) ? pub > cutoff : true;
